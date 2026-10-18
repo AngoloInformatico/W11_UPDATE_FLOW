@@ -1,23 +1,16 @@
 # W11 Update Flow
 
 <p align="center">
-  <img src="web/css/styles.css" alt="" width="0" height="0">
   <b>Aggiornamento automatizzato di Windows 11 su PC non idonei</b><br>
   <i>Download con 1 clic della ISO ufficiale Microsoft, iniezione bypass hardware e conservazione al 100% di file, programmi e impostazioni.</i>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Versione-1.0.3-B8F23A?style=for-the-badge" alt="Versione">
-  <img src="https://img.shields.io/badge/Build-5-555555?style=for-the-badge" alt="Build">
-  <a href="https://github.com/AngoloInformatico/W11-Update-Flow/releases/latest"><img src="https://img.shields.io/github/v/release/AngoloInformatico/W11-Update-Flow?style=for-the-badge&label=Release&color=2EA043" alt="Ultima release"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/Licenza-GPLv3-blue?style=for-the-badge" alt="Licenza GPLv3"></a>
-</p>
-
-<p align="center">
-  <a href="https://www.youtube.com/@AngoloInformatico"><img src="https://img.shields.io/badge/YouTube-@AngoloInformatico-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="YouTube"></a>
-  <a href="https://github.com/AngoloInformatico"><img src="https://img.shields.io/badge/GitHub-AngoloInformatico-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
-  <img src="https://img.shields.io/badge/Windows-11%20%7C%2010%20(64--bit)-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows">
-  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript">
+  <img src="https://img.shields.io/badge/HTML5%20%2F%20CSS3-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5 e CSS3">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/Licenza-GPL%20v3-0078D6?style=for-the-badge" alt="Licenza GPLv3"></a>
 </p>
 
 <p align="center">
@@ -174,24 +167,6 @@ v1.0.0 (Build 1) -> v1.0.1 (Build 2) -> ...
 
 ---
 
-## 👨‍💻 Autore e Crediti
-
-Sviluppato da **Alex Lignola**  
-Canale e community: **L'Angolo Informatico**
-
-- 🎥 **YouTube**: [@AngoloInformatico](https://www.youtube.com/@AngoloInformatico)
-- 🐙 **GitHub Profilo**: [@AngoloInformatico](https://github.com/AngoloInformatico)
-- 📦 **Tutti i Repository**: [GitHub Repositories](https://github.com/AngoloInformatico?tab=repositories)
-
----
-
-## 📄 Licenza
-
-Questo progetto è distribuito secondo i termini della **GNU General Public License v3.0**.  
-Consulta il file [LICENSE](LICENSE) per il testo completo della licenza.
-
----
-
 ## ⚖️ Esclusione di Responsabilità & Clausole di Salvaguardia (Disclaimer)
 
 > [!CAUTION]
@@ -219,6 +194,29 @@ Consulta il file [LICENSE](LICENSE) per il testo completo della licenza.
 
 6. **Accettazione vincolante dei termini**:  
    Il download, l'esecuzione, la clonazione o l'utilizzo a qualsiasi titolo dell'applicazione o del relativo codice sorgente implicano l'accettazione espressa, piena, incondizionata e vincolante di tutte le presenti clausole e limitazioni di responsabilità. Qualora l'utente non concordi, anche solo parzialmente, con le clausole sopra indicate, **non è autorizzato a utilizzare né ad eseguire l'applicazione**.
+
+---
+
+## 📄 Licenza
+
+Questo progetto è distribuito secondo i termini della **GNU General Public License v3.0**.  
+Consulta il file [LICENSE](LICENSE) per il testo completo della licenza.
+
+---
+
+## 👨‍💻 Autore e Community
+
+Sviluppato da **Alex Lignola**  
+Canale e community: **L'Angolo Informatico**
+
+<p align="left">
+  <a href="https://www.youtube.com/@AngoloInformatico"><img src="https://img.shields.io/badge/YouTube-@AngoloInformatico-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="YouTube"></a>
+  <a href="https://github.com/AngoloInformatico"><img src="https://img.shields.io/badge/GitHub-AngoloInformatico-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+</p>
+
+- 🎥 **YouTube**: [@AngoloInformatico](https://www.youtube.com/@AngoloInformatico)
+- 🐙 **GitHub Profilo**: [@AngoloInformatico](https://github.com/AngoloInformatico)
+- 📦 **Tutti i Repository**: [GitHub Repositories](https://github.com/AngoloInformatico?tab=repositories)
 
 ---
 
