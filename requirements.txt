@@ -1,0 +1,5 @@
+# W11 Update Flow - Dipendenze
+# L'applicazione utilizza la libreria standard di Python e il browser Edge/Chrome di sistema (Webview).
+# PyInstaller è necessario solo per la compilazione del file .exe tramite GeneraExe.py.
+
+pyinstaller>=6.0.0

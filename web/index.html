@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>W11 Update Flow</title>
+  <meta name="description" content="Aggiornamento automatizzato di Windows 11 su PC non idonei con download ISO ufficiale e bypass hardware integrato.">
+  <meta name="w11uf-token" content="__W11UF_TOKEN__">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="128x128" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>window.__W11UF_TOKEN__ = "__W11UF_TOKEN__";</script>
+</head>
+<body>
+  <div class="app">
+    <!-- ===================================================================
+         SIDEBAR
+         =================================================================== -->
+    <aside class="sidebar">
+      <div class="brand">
+        <img class="brand-mark" src="icon.png" alt="W11 Update Flow Logo">
+        <div class="brand-text">
+          <div class="brand-name">W11 Update Flow</div>
+          <div class="brand-ver" id="brand-ver">v1.0.0</div>
+        </div>
+      </div>
+
+      <div class="nav-label">Navigazione</div>
+      <button class="nav-item active" data-view="dashboard" id="nav-dashboard">
+        <svg class="icon"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Dashboard</span>
+        <span class="badge-dot" id="dot-dashboard"></span>
+      </button>
+
+      <button class="nav-item" data-view="compat" id="nav-compat">
+        <svg class="icon"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <span>Verifica PC</span>
+        <span class="badge-dot" id="dot-compat"></span>
+      </button>
+
+      <button class="nav-item" data-view="download" id="nav-download">
+        <svg class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Download ISO</span>
+        <span class="badge-dot" id="dot-download"></span>
+      </button>
+
+      <button class="nav-item" data-view="upgrade" id="nav-upgrade">
+        <svg class="icon"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        <span>Aggiornamento</span>
+        <span class="badge-dot" id="dot-upgrade"></span>
+      </button>
+
+      <div class="nav-label">Sistema & Supporto</div>
+      <button class="nav-item" data-view="tools" id="nav-tools">
+        <svg class="icon"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <span>Strumenti & Utility</span>
+      </button>
+
+      <button class="nav-item" data-view="logs" id="nav-logs">
+        <svg class="icon"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        <span>Console & Log</span>
+        <span class="badge-dot" id="dot-logs"></span>
+      </button>
+
+      <button class="nav-item" data-view="about" id="nav-about">
+        <svg class="icon"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span>Informazioni</span>
+      </button>
+
+      <div class="sidebar-foot">
+        <div class="priv" id="admin-badge">
+          <svg class="icon sm"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span id="admin-text">Controllo privilegi…</span>
+        </div>
+        <div class="socials">
+          <a class="social" id="link-yt" title="Canale YouTube @AngoloInformatico" href="https://www.youtube.com/@AngoloInformatico" target="_blank" rel="noopener">
+            <svg class="icon sm" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+          </a>
+          <a class="social" id="link-gh" title="GitHub @AngoloInformatico" href="https://github.com/AngoloInformatico" target="_blank" rel="noopener">
+            <svg class="icon sm" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          </a>
+          <a class="social" id="link-gh-repos" title="Tutti i repository" href="https://github.com/AngoloInformatico?tab=repositories" target="_blank" rel="noopener">
+            <svg class="icon sm" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </a>
+        </div>
+        <div class="credit">
+          Created by <b>Alex Lignola</b><br>
+          © 2026 W11 Update Flow
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===================================================================
+         MAIN VIEWPORT
+         =================================================================== -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="crumb" id="crumb-title">Dashboard</div>
+          <div class="crumb-sub" id="crumb-sub">Flusso di aggiornamento e stato del sistema</div>
+        </div>
+        <div class="topbar-actions">
+          <div class="pill" id="pill-hw">
+            <span class="badge-dot" id="pill-hw-dot"></span>
+            <span id="pill-hw-text">Analisi PC…</span>
+          </div>
+          <div class="pill" id="pill-iso">
+            <svg class="icon sm"><ellipse cx="12" cy="12" rx="10" ry="10"/><circle cx="12" cy="12" r="3"/></svg>
+            <span id="pill-iso-text">Nessuna ISO</span>
+          </div>
+          <button class="btn btn-sm btn-ghost" id="btn-quick-scan" title="Riesegui scansione compatibilità">
+            <svg class="icon sm"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span>Analizza</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="content">
+        <!-- ===============================================================
+             VIEW: DASHBOARD
+             =============================================================== -->
+        <section class="view active" id="view-dashboard">
+          <div class="hero">
+            <div>
+              <div class="hero-status">
+                <span class="tag accent" id="dash-badge-status">FLUSSO GUIDATO</span>
+                <span class="tag" id="dash-badge-bypass">BYPASS AUTOMATICO ATTIVO</span>
+              </div>
+              <div class="version-path">
+                <div class="vp-node">
+                  <div class="vp-label">Versione Attuale</div>
+                  <div class="vp-value" id="vp-from">—</div>
+                  <div class="vp-build mono" id="vp-from-build">Rilevamento in corso…</div>
+                </div>
+                <div class="vp-arrow" aria-hidden="true"></div>
+                <div class="vp-node">
+                  <div class="vp-label">Versione Obiettivo</div>
+                  <div class="vp-value to" id="vp-to">25H2 / 26H2</div>
+                  <div class="vp-build mono" id="vp-to-build">Ultima build ufficiale Microsoft</div>
+                </div>
+              </div>
+              <p class="hero-desc">
+                Aggiorna il tuo computer con Windows 11 anche se privo di requisiti ufficiali (TPM 2.0, Secure Boot o CPU obsoleta).
+                I file personali, le applicazioni e le impostazioni vengono conservati al 100%.
+              </p>
+              <div class="hero-actions">
+                <button class="btn btn-primary btn-lg" id="btn-hero-download">
+                  <svg class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span id="btn-hero-download-text">1-Clic: Scarica ISO Ufficiale</span>
+                </button>
+                <button class="btn btn-lg" id="btn-hero-upgrade">
+                  <svg class="icon"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>Avvia Aggiornamento</span>
+                </button>
+                <button class="btn btn-lg btn-ghost" id="btn-hero-folder" title="Apri cartella ISO">
+                  <svg class="icon"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                  <span>Cartella ISO</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Readiness Ring -->
+            <div class="ring" id="readiness-ring">
+              <svg viewBox="0 0 120 120">
+                <circle class="track" cx="60" cy="60" r="50" fill="none" stroke-width="8"/>
+                <circle class="bar" id="ring-bar" cx="60" cy="60" r="50" fill="none" stroke-width="8" stroke-dasharray="314.16" stroke-dashoffset="314.16" stroke-linecap="round"/>
+              </svg>
+              <div class="ring-center">
+                <div class="ring-value" id="ring-val">0<small>%</small></div>
+                <div class="ring-caption" id="ring-cap">Pronto per l'aggiornamento</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Flow steps cards -->
+          <div class="flow">
+            <!-- Step 1 -->
+            <div class="step" id="flow-step-1">
+              <div class="step-top">
+                <div class="step-num">01</div>
+                <div>
+                  <div class="step-title">Verifica Compatibilità PC</div>
+                  <div class="eyebrow" id="flow-s1-sub">Analisi hardware</div>
+                </div>
+                <span class="tag" id="flow-s1-tag">In corso…</span>
+              </div>
+              <div class="step-text" id="flow-s1-desc">
+                Rilevamento CPU SSE4.2/POPCNT, RAM, spazio su disco e requisiti TPM/Secure Boot da aggirare.
+              </div>
+              <div class="step-actions">
+                <button class="btn btn-sm btn-block" data-view-target="compat">Dettagli Hardware</button>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step" id="flow-step-2">
+              <div class="step-top">
+                <div class="step-num">02</div>
+                <div>
+                  <div class="step-title">Scaricamento ISO Ufficiale</div>
+                  <div class="eyebrow" id="flow-s2-sub">Microsoft Server x64</div>
+                </div>
+                <span class="tag" id="flow-s2-tag">In attesa</span>
+              </div>
+              <div class="step-text" id="flow-s2-desc">
+                Download diretto della ISO più recente (Windows 11 Italiano 64-bit) salvata nella cartella ISO dedicata.
+              </div>
+              <div class="step-actions">
+                <button class="btn btn-sm btn-block btn-primary" id="btn-flow-download">Scarica ISO</button>
+                <button class="btn btn-sm" data-view-target="download">Gestione</button>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step" id="flow-step-3">
+              <div class="step-top">
+                <div class="step-num">03</div>
+                <div>
+                  <div class="step-title">Avvio Aggiornamento</div>
+                  <div class="eyebrow" id="flow-s3-sub">Bypass e installazione</div>
+                </div>
+                <span class="tag" id="flow-s3-tag">Non pronto</span>
+              </div>
+              <div class="step-text" id="flow-s3-desc">
+                Inietta il comando di bypass nel terminale di setup per aggiornare senza blocchi e mantenendo tutti i file.
+              </div>
+              <div class="step-actions">
+                <button class="btn btn-sm btn-block" id="btn-flow-upgrade">Configura & Avvia</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Grid: Mini summary & Console preview -->
+          <div class="grid g-main">
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Riepilogo del Sistema</div>
+                  <div class="card-sub">Parametri rilevati e requisiti aggirati</div>
+                </div>
+                <button class="btn btn-sm btn-ghost" data-view-target="compat">Tutti i Controlli</button>
+              </div>
+              <dl class="kv" id="dash-sys-kv">
+                <dt>Computer / Modello</dt><dd id="d-model"><span class="skel"></span></dd>
+                <dt>Processore (CPU)</dt><dd id="d-cpu"><span class="skel"></span></dd>
+                <dt>Istruzioni SSE4.2 / POPCNT</dt><dd id="d-sse"><span class="skel"></span></dd>
+                <dt>Memoria RAM</dt><dd id="d-ram"><span class="skel"></span></dd>
+                <dt>Spazio Libero su C:</dt><dd id="d-disk"><span class="skel"></span></dd>
+                <dt>Stato TPM</dt><dd id="d-tpm"><span class="skel"></span></dd>
+                <dt>Secure Boot & Firmware</dt><dd id="d-sb"><span class="skel"></span></dd>
+              </dl>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div class="dots"><i style="background:#FF5F56"></i><i style="background:#FFBD2E"></i><i style="background:#27C93F"></i></div>
+                <div class="card-title" style="margin-left:6px">Console Operazioni</div>
+                <button class="btn btn-sm btn-ghost" style="margin-left:auto" data-view-target="logs">Espandi</button>
+              </div>
+              <div class="console sm" id="dash-console"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW: COMPATIBILITY SCAN
+             =============================================================== -->
+        <section class="view" id="view-compat">
+          <div class="grid g-main">
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Stato Requisiti di Aggiornamento</div>
+                  <div class="card-sub">Valutazione dei componenti e aggiramento automatico</div>
+                </div>
+                <button class="btn btn-sm btn-ghost" id="btn-recheck">
+                  <svg class="icon sm"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                  <span>Riesegui Analisi</span>
+                </button>
+              </div>
+              <div class="checks" id="checks-container">
+                <div class="empty">Analisi in corso…</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Dettagli del Sistema</div>
+                  <div class="card-sub">Informazioni raccolte tramite WMI e Registro</div>
+                </div>
+              </div>
+              <dl class="kv" id="compat-full-kv">
+                <dt>Sistema Operativo</dt><dd id="c-os">—</dd>
+                <dt>Versione & Build</dt><dd id="c-build">—</dd>
+                <dt>Lingua del Sistema</dt><dd id="c-lang">—</dd>
+                <dt>Architettura SO</dt><dd id="c-arch">—</dd>
+                <dt>Modello Computer</dt><dd id="c-model">—</dd>
+                <dt>Anno BIOS</dt><dd id="c-bios">—</dd>
+                <dt>Processore</dt><dd id="c-cpu">—</dd>
+                <dt>Core / Thread</dt><dd id="c-cores">—</dd>
+                <dt>Memoria Totale</dt><dd id="c-ram">—</dd>
+                <dt>Spazio Libero Disco C:</dt><dd id="c-disk">—</dd>
+                <dt>Protezione BitLocker</dt><dd id="c-bl">—</dd>
+                <dt>Riavvio Sospeso</dt><dd id="c-reboot">—</dd>
+              </dl>
+
+              <div class="notice" style="margin-top:20px">
+                <svg class="icon"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <div>
+                  <b>Nota sul bypass dei requisiti:</b> I requisiti TPM 2.0, Secure Boot, RAM e CPU non idonee vengono automaticamente aggirati tramite flag di setup e registro di sistema durante la procedura di aggiornamento.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW: DOWNLOAD ISO
+             =============================================================== -->
+        <section class="view" id="view-download">
+          <div class="card" style="margin-bottom:18px">
+            <div class="dl-hero">
+              <div class="dl-ico">
+                <svg class="icon lg"><ellipse cx="12" cy="12" rx="10" ry="10"/><circle cx="12" cy="12" r="3"/></svg>
+              </div>
+              <div>
+                <div class="eyebrow accent">Download Diretto Ufficiale</div>
+                <div class="dl-name" id="dl-title">Windows 11 (64-bit, Italiano)</div>
+                <div class="dl-meta">
+                  <span>Origine: <b>software.download.prss.microsoft.com</b></span>
+                  <span>•</span>
+                  <span>Edizione: <b>Home / Pro / Enterprise</b></span>
+                  <span>•</span>
+                  <span>Percorso: <b class="mono" id="dl-folder-path">.../ISO/</b></span>
+                </div>
+              </div>
+              <div class="dl-actions">
+                <button class="btn btn-primary" id="btn-dl-action">
+                  <svg class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span id="btn-dl-text">Avvia Scaricamento</span>
+                </button>
+                <button class="btn btn-ghost" id="btn-dl-pause" style="display:none">Pausa</button>
+                <button class="btn btn-danger btn-ghost" id="btn-dl-cancel" style="display:none">Annulla</button>
+              </div>
+            </div>
+
+            <div class="dl-progress">
+              <div class="progress lg" id="dl-progress-bar">
+                <i id="dl-progress-fill" style="width:0%"></i>
+              </div>
+              <div class="dl-stats">
+                <div class="stat">
+                  <div class="stat-label">Stato</div>
+                  <div class="stat-value" id="st-state">In attesa</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-label">Completato</div>
+                  <div class="stat-value" id="st-done">0 B / —</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-label">Velocità</div>
+                  <div class="stat-value" id="st-speed">—</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-label">Tempo Stimato</div>
+                  <div class="stat-value" id="st-eta">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ISO Management -->
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Immagini ISO Disponibili</div>
+                <div class="card-sub">Presenti nella cartella dedicata ISO dell'applicazione o caricate dall'esterno</div>
+              </div>
+              <div class="spacer"></div>
+              <button class="btn btn-sm btn-ghost" id="btn-browse-iso">
+                <svg class="icon sm"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span>Seleziona ISO esterna…</span>
+              </button>
+              <button class="btn btn-sm btn-ghost" id="btn-open-iso-folder">
+                <svg class="icon sm"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span>Apri Cartella ISO</span>
+              </button>
+            </div>
+            <div class="iso-list" id="iso-list-container">
+              <div class="empty">Nessuna ISO scaricata finora. Fai clic su "Avvia Scaricamento" sopra per scaricarne una automaticamente.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW: UPGRADE LAUNCHER
+             =============================================================== -->
+        <section class="view" id="view-upgrade">
+          <div class="grid g-main">
+            <!-- Left: Settings & Options -->
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Configurazione Aggiornamento</div>
+                  <div class="card-sub">Parametri di lancio e opzioni di sicurezza</div>
+                </div>
+              </div>
+
+              <!-- Selected ISO display -->
+              <div class="field">
+                <div class="field-label">Immagine ISO Selezionata</div>
+                <div class="iso selected" id="upg-iso-card" style="cursor:default">
+                  <div class="iso-ico">
+                    <svg class="icon"><ellipse cx="12" cy="12" rx="10" ry="10"/><circle cx="12" cy="12" r="3"/></svg>
+                  </div>
+                  <div>
+                    <div class="iso-name" id="upg-iso-name">Nessuna ISO selezionata</div>
+                    <div class="iso-meta mono" id="upg-iso-meta">Scarica una ISO dalla sezione Download o selezionala dall'elenco</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mode Segmented -->
+              <div class="field">
+                <div class="field-label">Modalità di Aggiornamento</div>
+                <div class="seg" id="seg-mode">
+                  <button type="button" class="on" data-val="auto">
+                    <b>Automatica</b>
+                    <span>Accetta EULA ed esegue /auto upgrade</span>
+                  </button>
+                  <button type="button" data-val="guided">
+                    <b>Guidata</b>
+                    <span>Mostra procedura passo-passo a schermo</span>
+                  </button>
+                  <button type="button" data-val="silent">
+                    <b>Silenziosa</b>
+                    <span>Esecuzione in background con riavvio</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Method Segmented -->
+              <div class="field">
+                <div class="field-label">Metodo di Bypass</div>
+                <div class="seg" id="seg-method">
+                  <button type="button" class="on" data-val="server">
+                    <b>Stringa Setup Server (Consigliato)</b>
+                    <span>setup.exe /product server /compat IgnoreWarning</span>
+                  </button>
+                  <button type="button" data-val="appraiser">
+                    <b>Neutralizzazione Appraiser</b>
+                    <span>Copia locale e sostituzione appraiserres.dll</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Toggles -->
+              <div class="toggle-row">
+                <div class="toggle-text">
+                  <b>Crea Punto di Ripristino del Sistema</b>
+                  <span>Crea un checkpoint prima di applicare modifiche e avviare il setup</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-restore" checked>
+                  <i></i>
+                </label>
+              </div>
+
+              <div class="toggle-row">
+                <div class="toggle-text">
+                  <b>Rimuovi Avviso Watermark sul Desktop</b>
+                  <span>Neutralizza la scritta "Requisiti di sistema non soddisfatti"</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-watermark" checked>
+                  <i></i>
+                </label>
+              </div>
+
+              <!-- Command Preview -->
+              <div class="field" style="margin-top:16px">
+                <div class="field-label">Stringa Eseguita nel Terminale di Setup</div>
+                <div class="cmd mono" id="cmd-preview">
+                  <span class="p">setup.exe</span> <span class="f">/product</span> <span class="v">server</span> <span class="f">/compat</span> <span class="v">IgnoreWarning</span> <span class="f">/MigrateDrivers</span> <span class="v">All</span> <span class="f">/DynamicUpdate</span> <span class="v">Disable</span> <span class="f">/auto</span> <span class="v">upgrade</span>
+                </div>
+              </div>
+
+              <button class="btn btn-primary btn-lg btn-block" id="btn-start-upgrade" style="margin-top:10px">
+                <svg class="icon"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>Avvia Procedura di Aggiornamento</span>
+              </button>
+            </div>
+
+            <!-- Right: Live Timeline & Progress -->
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">Avanzamento Operazione</div>
+                  <div class="card-sub">Stato in tempo reale delle fasi di bypass</div>
+                </div>
+                <span class="tag" id="upg-status-tag">Inattivo</span>
+              </div>
+
+              <div class="timeline" id="timeline-container"></div>
+
+              <div class="notice info" style="margin-top:20px" id="upg-notice">
+                <svg class="icon"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <div>
+                  Durante l'aggiornamento, il programma di installazione di Windows si aprirà e preparerà i file. I tuoi dati personali, i documenti e le applicazioni installate non verranno toccati.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW: TOOLS & UTILITIES
+             =============================================================== -->
+        <section class="view" id="view-tools">
+          <div class="card" style="margin-bottom:18px">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Verifica Integrità SHA-256 della ISO</div>
+                <div class="card-sub">Calcola e confronta il checksum crittografico del file scaricato</div>
+              </div>
+            </div>
+            <div class="grid g-2">
+              <div>
+                <button class="btn btn-block" id="btn-calc-hash">
+                  <svg class="icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+                  <span>Calcola SHA-256 della ISO Selezionata</span>
+                </button>
+                <div class="progress" id="hash-progress-bar" style="margin-top:10px; display:none">
+                  <i id="hash-progress-fill" style="width:0%"></i>
+                </div>
+              </div>
+              <div>
+                <input type="text" class="mono" id="hash-result" readonly placeholder="Il valore hash calcolato apparirà qui…" style="width:100%; height:38px; padding:0 12px; background:var(--bg-2); border:1px solid var(--line); border-radius:var(--r-sm)">
+              </div>
+            </div>
+          </div>
+
+          <div class="section-title">
+            <h2>Utilità di Sicurezza & Manutenzione</h2>
+            <p>Operazioni consigliate prima e dopo l'aggiornamento</p>
+          </div>
+
+          <div class="tools">
+            <button class="tool" data-tool="restore_point">
+              <div class="tool-ico">
+                <svg class="icon"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div>
+                <b>Crea Punto di Ripristino</b>
+                <span>Genera immediatamente un punto di ripristino del sistema manuale</span>
+              </div>
+            </button>
+
+            <button class="tool" data-tool="watermark">
+              <div class="tool-ico">
+                <svg class="icon"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              </div>
+              <div>
+                <b>Rimuovi Watermark</b>
+                <span>Elimina la scritta "Requisiti di sistema non soddisfatti" dal desktop</span>
+              </div>
+            </button>
+
+            <button class="tool" data-tool="extend_rollback">
+              <div class="tool-ico">
+                <svg class="icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div>
+                <b>Estendi Rollback a 60 Giorni</b>
+                <span>Estende il tempo per tornare alla versione precedente da 10 a 60 giorni via DISM</span>
+              </div>
+            </button>
+
+            <button class="tool" data-tool="cleanmgr">
+              <div class="tool-ico">
+                <svg class="icon"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </div>
+              <div>
+                <b>Pulizia Disco di Windows</b>
+                <span>Avvia cleanmgr.exe per liberare spazio su C: prima o dopo l'installazione</span>
+              </div>
+            </button>
+
+            <button class="tool" data-tool="open_setup_logs">
+              <div class="tool-ico">
+                <svg class="icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </div>
+              <div>
+                <b>Log di Windows Setup (Panther)</b>
+                <span>Apre la cartella dei log $WINDOWS.~BT per diagnosticare eventuali errori</span>
+              </div>
+            </button>
+
+            <button class="tool" data-tool="clean_setup_cache">
+              <div class="tool-ico">
+                <svg class="icon"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              </div>
+              <div>
+                <b>Pulisci File Temporanei W11UF</b>
+                <span>Elimina eventuali file .part o cartelle di setup temporanee create dall'app</span>
+              </div>
+            </button>
+
+            <button class="tool" data-tool="unmount">
+              <div class="tool-ico">
+                <svg class="icon"><polygon points="12 2 2 22 22 22"/><line x1="12" y1="16" x2="12" y2="16"/></svg>
+              </div>
+              <div>
+                <b>Smonta Immagine ISO</b>
+                <span>Espelle e smonta l'unità virtuale creata durante l'aggiornamento</span>
+              </div>
+            </button>
+
+            <button class="tool" data-tool="recovery">
+              <div class="tool-ico">
+                <svg class="icon"><circle cx="12" cy="12" r="10"/><polyline points="12 8 8 12 12 16"/><line x1="16" y1="12" x2="8" y2="12"/></svg>
+              </div>
+              <div>
+                <b>Opzioni di Ripristino Windows</b>
+                <span>Apre le impostazioni di ripristino per eventuale rollback</span>
+              </div>
+            </button>
+
+            <button class="tool" data-tool="revert">
+              <div class="tool-ico">
+                <svg class="icon"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><polyline points="3 3 3 8 8 8"/></svg>
+              </div>
+              <div>
+                <b>Ripristina Chiavi di Registro</b>
+                <span>Rimuove le chiavi di bypass dal registro di Windows (MoSetup, LabConfig)</span>
+              </div>
+            </button>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW: LOGS & CONSOLE
+             =============================================================== -->
+        <section class="view" id="view-logs">
+          <div class="card">
+            <div class="card-head">
+              <div class="dots"><i style="background:#FF5F56"></i><i style="background:#FFBD2E"></i><i style="background:#27C93F"></i></div>
+              <div class="card-title" style="margin-left:6px">Registro Completo Eventi e Comandi</div>
+              <div class="spacer"></div>
+              <button class="btn btn-sm btn-ghost" id="btn-copy-logs">Copia Log</button>
+              <button class="btn btn-sm btn-ghost" id="btn-open-log-file">Apri File di Log</button>
+            </div>
+            <div class="console lg" id="full-console"></div>
+          </div>
+        </section>
+
+        <!-- ===============================================================
+             VIEW: ABOUT & CREDITS
+             =============================================================== -->
+        <section class="view" id="view-about">
+          <div class="card" style="margin-bottom:18px">
+            <div class="about">
+              <img class="about-logo" src="icon.png" alt="W11 Update Flow Logo">
+              <div>
+                <h1>W11 Update Flow</h1>
+                <p>
+                  Applicazione per automatizzare l'aggiornamento a Windows 11 (24H2, 25H2, 26H2 e successive)
+                  su computer con hardware non idoneo (fino a 15 anni di vita), con download della ISO ufficiale
+                  Microsoft e iniezione delle stringhe di bypass certificate.
+                </p>
+                <div class="tag ok" style="margin-bottom:10px">100% Nessuna perdita di dati personali o app</div>
+                <div class="mono" style="font-size:12px; color:var(--muted)">Versione <span id="about-version">1.0.0</span> · Build 2026.1</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid g-2">
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title">Canali e Repository Ufficiali</div>
+              </div>
+              <div class="links">
+                <a class="link-row" href="https://www.youtube.com/@AngoloInformatico" target="_blank" rel="noopener">
+                  <svg class="icon"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+                  <div>
+                    <b>YouTube: @AngoloInformatico</b>
+                    <small>Guide, tutorial e approfondimenti su Windows 11</small>
+                  </div>
+                  <svg class="icon sm"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+
+                <a class="link-row" href="https://github.com/AngoloInformatico" target="_blank" rel="noopener">
+                  <svg class="icon"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                  <div>
+                    <b>GitHub: @AngoloInformatico</b>
+                    <small>Profilo sviluppatore e progetti open source</small>
+                  </div>
+                  <svg class="icon sm"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+
+                <a class="link-row" href="https://github.com/AngoloInformatico?tab=repositories" target="_blank" rel="noopener">
+                  <svg class="icon"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                  <div>
+                    <b>Repository GitHub</b>
+                    <small>Elenco completo dei repository e aggiornamenti</small>
+                  </div>
+                  <svg class="icon sm"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title">Copyright e Dichiarazione di Licenza</div>
+              </div>
+              <p style="color:var(--text-2); font-size:13px; line-height:1.6">
+                <b>Created by Alex Lignola - © 2026 W11 Update Flow - All rights reserved.</b>
+              </p>
+              <p style="color:var(--muted); font-size:12.5px; line-height:1.6">
+                Windows 11, Microsoft e i relativi loghi sono marchi registrati di Microsoft Corporation.
+                Questo software è uno strumento di supporto sviluppato indipendentemente per facilitare
+                l'aggiornamento e la manutenzione di PC idonei dal punto di vista computazionale.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Global footer -->
+        <footer class="footer">
+          <span>Created by <b>Alex Lignola</b></span>
+          <span class="sep">•</span>
+          <span>© 2026 W11 Update Flow - All rights reserved</span>
+          <span class="sep">•</span>
+          <a href="https://www.youtube.com/@AngoloInformatico" target="_blank" rel="noopener">YouTube @AngoloInformatico</a>
+          <span class="sep">•</span>
+          <a href="https://github.com/AngoloInformatico" target="_blank" rel="noopener">GitHub @AngoloInformatico</a>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===================================================================
+       CONFIRMATION DIALOG (MODAL)
+       =================================================================== -->
+  <dialog id="dlg-confirm-upgrade">
+    <div class="dlg-body">
+      <div class="dlg-ico">
+        <svg class="icon lg"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </div>
+      <h3>Conferma Avvio Aggiornamento</h3>
+      <p>
+        Stai per avviare l'aggiornamento di Windows 11 con bypass dei controlli hardware.
+        I tuoi dati personali e programmi verranno preservati.
+      </p>
+
+      <div class="dlg-checks">
+        <label class="dlg-check">
+          <input type="checkbox" id="chk-dlg-power" checked>
+          <span>Il PC è collegato alla presa di corrente / alimentatore</span>
+        </label>
+        <label class="dlg-check">
+          <input type="checkbox" id="chk-dlg-backup" checked>
+          <span>Consapevolezza: i file vengono mantenuti (backup consigliato)</span>
+        </label>
+        <label class="dlg-check">
+          <input type="checkbox" id="chk-dlg-time" checked>
+          <span>Il processo richiederà alcuni minuti e riavvii del PC</span>
+        </label>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn btn-ghost" id="btn-dlg-cancel">Annulla</button>
+      <button class="btn btn-primary" id="btn-dlg-proceed">Conferma e Avvia Setup</button>
+    </div>
+  </dialog>
+
+  <!-- ===================================================================
+       ISO UPDATE DIALOG (MODAL)
+       =================================================================== -->
+  <dialog id="dlg-iso-update">
+    <div class="dlg-body">
+      <div class="dlg-ico">
+        <svg class="icon lg"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </div>
+      <h3>È disponibile una ISO più aggiornata</h3>
+      <p>Sul sito Microsoft è presente una versione di Windows 11 più recente rispetto a quella salvata nella cartella <b>ISO</b>.</p>
+
+      <div class="iso-compare">
+        <div class="iso-cmp-card">
+          <div class="iso-cmp-label">ISO attuale (locale)</div>
+          <div class="iso-cmp-rel" id="iso-upd-local-rel">—</div>
+          <div class="iso-cmp-name mono" id="iso-upd-local-name">—</div>
+          <div class="iso-cmp-meta" id="iso-upd-local-meta">—</div>
+        </div>
+        <div class="iso-cmp-arrow">→</div>
+        <div class="iso-cmp-card new">
+          <div class="iso-cmp-label">Nuova ISO (Microsoft)</div>
+          <div class="iso-cmp-rel" id="iso-upd-remote-rel">—</div>
+          <div class="iso-cmp-name mono" id="iso-upd-remote-name">—</div>
+          <div class="iso-cmp-meta" id="iso-upd-remote-meta">—</div>
+        </div>
+      </div>
+      <p class="iso-cmp-warn">⚠ Scegliendo di scaricare la nuova ISO, quella attuale verrà eliminata al termine del download.</p>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn btn-ghost" id="btn-iso-upd-keep">Mantieni l'attuale</button>
+      <button class="btn btn-primary" id="btn-iso-upd-download">Scarica e sostituisci</button>
+    </div>
+  </dialog>
+
+  <!-- ===================================================================
+       TOAST CONTAINER
+       =================================================================== -->
+  <div class="toasts" id="toasts"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

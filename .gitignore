@@ -1,0 +1,44 @@
+# ==============================================================================
+# W11 Update Flow - .gitignore
+# ==============================================================================
+
+# Cartella di lavoro privata e note personali (esclusa dai repository pubblici)
+Codex_Work/
+
+# Directory ISO scaricate (file immagine disco di grandi dimensioni ~5-7GB)
+ISO/*
+!ISO/.gitkeep
+*.iso
+*.iso.part
+
+# Cartelle di compilazione ed eseguibili generati da PyInstaller
+build/
+dist/
+*.spec
+
+# File temporanei Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+*.pyo
+
+# Ambienti virtuali
+venv/
+env/
+.env
+.venv/
+
+# File di registro e cache
+*.log
+w11updateflow.log
+W11UpdateFlow_Setup/
+
+# File di sistema e configurazioni editor
+desktop.ini
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
