@@ -250,18 +250,30 @@ UPGRADER = UpgradeRunner()
 
 
 def list_isos() -> list[dict]:
-    from .ms_download import parse_iso_name
+    from .ms_download import parse_iso_name, compare_iso_with_target
     items = []
     for f in sorted(iso_dir().glob("*.iso"), key=lambda p: p.stat().st_mtime, reverse=True):
         st = f.stat()
         info = parse_iso_name(f.name)
-        items.append({"path": str(f), "name": f.name, "size": st.st_size,
-                      "date": time.strftime("%d/%m/%Y %H:%M", time.localtime(st.st_mtime)), **info})
+        cmp = compare_iso_with_target(info)
+        items.append({
+            "path": str(f), "name": f.name, "size": st.st_size,
+            "date": time.strftime("%d/%m/%Y %H:%M", time.localtime(st.st_mtime)),
+            "is_outdated": cmp["is_outdated"], "status": cmp["status"],
+            "status_msg": cmp["message"], "target_release": cmp["target_release"],
+            **info
+        })
     sel = SETTINGS.get("selected_iso")
     if sel and Path(sel).exists() and not any(i["path"] == sel for i in items):
         f = Path(sel)
         st = f.stat()
-        items.append({"path": sel, "name": f.name, "size": st.st_size, "external": True,
-                      "date": time.strftime("%d/%m/%Y %H:%M", time.localtime(st.st_mtime)),
-                      **parse_iso_name(f.name)})
+        info = parse_iso_name(f.name)
+        cmp = compare_iso_with_target(info)
+        items.append({
+            "path": sel, "name": f.name, "size": st.st_size, "external": True,
+            "date": time.strftime("%d/%m/%Y %H:%M", time.localtime(st.st_mtime)),
+            "is_outdated": cmp["is_outdated"], "status": cmp["status"],
+            "status_msg": cmp["message"], "target_release": cmp["target_release"],
+            **info
+        })
     return items

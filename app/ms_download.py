@@ -37,12 +37,23 @@ LOCALE = "it-IT"
 
 BUILD_TO_RELEASE = {
     "22000": "21H2", "22621": "22H2", "22631": "23H2", "26100": "24H2",
-    "26200": "25H2", "26300": "26H2", "26400": "27H2",
+    "26200": "25H2", "26300": "26H2", "26400": "27H2", "26500": "28H2",
+    "26600": "29H2", "26700": "30H2",
 }
 
 
 def release_from_build(build: str) -> str:
-    return BUILD_TO_RELEASE.get(str(build), f"Build {build}" if build else "—")
+    b_str = str(build).split(".")[0].strip()
+    if b_str in BUILD_TO_RELEASE:
+        return BUILD_TO_RELEASE[b_str]
+    try:
+        b_num = int(b_str)
+        if b_num >= 26100:
+            offset = (b_num - 26100) // 100
+            return f"{24 + offset}H2"
+    except Exception:
+        pass
+    return f"Build {build}" if build else "—"
 
 
 def parse_iso_name(name: str) -> dict:
@@ -73,6 +84,73 @@ def _release_key(release: str) -> tuple[int, int]:
     return (int(m.group(1)), int(m.group(2))) if m else (0, 0)
 
 
+def compare_iso_with_target(iso_dict: dict, target_dict: dict | None = None) -> dict:
+    """Confronta una ISO (locale o esterna) con la versione obiettivo di Windows 11.
+
+    Restituisce:
+    - is_outdated: bool (True se la ISO è precedente alla versione obiettivo)
+    - local_release: str
+    - local_build: str
+    - target_release: str
+    - target_build: str
+    - status: 'outdated' | 'uptodate' | 'newer' | 'unknown'
+    - message: str
+    """
+    if not target_dict:
+        try:
+            target_dict = TARGET_CHECKER.snapshot()
+        except Exception:
+            target_dict = {}
+
+    tgt_rel = (target_dict or {}).get("release") or "26H2"
+    tgt_bld = str((target_dict or {}).get("build") or (target_dict or {}).get("base_build") or "0").split(".")[0]
+
+    loc_rel = iso_dict.get("release") or ""
+    loc_bld = str(iso_dict.get("build") or "0").split(".")[0]
+
+    rk_loc = _release_key(loc_rel)
+    rk_tgt = _release_key(tgt_rel)
+
+    bld_loc = int(loc_bld) if loc_bld.isdigit() else 0
+    bld_tgt = int(tgt_bld) if tgt_bld.isdigit() else 0
+
+    is_outdated = False
+    status = "uptodate"
+
+    if rk_loc != (0, 0) and rk_tgt != (0, 0):
+        if rk_loc < rk_tgt:
+            is_outdated = True
+            status = "outdated"
+        elif rk_loc > rk_tgt:
+            status = "newer"
+        elif bld_loc and bld_tgt and bld_loc < bld_tgt:
+            is_outdated = True
+            status = "outdated"
+    elif bld_loc and bld_tgt:
+        if bld_loc < bld_tgt:
+            is_outdated = True
+            status = "outdated"
+        elif bld_loc > bld_tgt:
+            status = "newer"
+
+    if is_outdated:
+        msg = f"La ISO presente ({loc_rel or 'Build ' + loc_bld}) è precedente alla versione obiettivo ({tgt_rel})."
+    elif status == "newer":
+        msg = f"La ISO presente ({loc_rel or 'Build ' + loc_bld}) è più recente dell'obiettivo standard ({tgt_rel})."
+    else:
+        msg = f"La ISO presente ({loc_rel or tgt_rel}) è allineata all'ultima versione stabile ufficiale ({tgt_rel})."
+
+    return {
+        "is_outdated": is_outdated,
+        "status": status,
+        "local_release": loc_rel,
+        "local_build": loc_bld,
+        "target_release": tgt_rel,
+        "target_build": tgt_bld,
+        "message": msg,
+    }
+
+
 def local_isos() -> list[Path]:
     """ISO complete presenti nella cartella ISO, dalla più recente alla più vecchia."""
     try:
@@ -89,8 +167,9 @@ def _is_newer(remote: dict, local: dict, remote_name: str, local_name: str) -> b
     rk, lk = _release_key(remote.get("release", "")), _release_key(local.get("release", ""))
     if rk != (0, 0) and lk != (0, 0) and rk != lk:
         return rk > lk
-    rb, lb = remote.get("build", ""), local.get("build", "")
-    if rb and lb and rb != lb:
+    rb = str(remote.get("build") or "").split(".")[0].strip()
+    lb = str(local.get("build") or "").split(".")[0].strip()
+    if rb.isdigit() and lb.isdigit() and int(rb) != int(lb):
         return int(rb) > int(lb)
     return remote_name.lower() != local_name.lower()
 
@@ -215,6 +294,11 @@ def resolve_iso_link() -> dict:
                     filename = url.split("?")[0].rsplit("/", 1)[-1]
                     info = parse_iso_name(filename)
                     log(f"Link ufficiale ottenuto: {filename}", "ok")
+                    if info.get("release"):
+                        try:
+                            TARGET_CHECKER.update_from_source(info["release"], info.get("build", ""), "ms_download_api")
+                        except Exception:
+                            pass
                     return {"url": url, "filename": filename,
                             "expires": data.get("DownloadExpirationDatetime", ""),
                             "build": info["build"], "release": info["release"]}
@@ -291,12 +375,19 @@ class IsoDownloader:
             threading.Thread(target=self._run_check, daemon=True).start()
             return True
 
-    def start(self, replace: bool = False) -> bool:
+    def start(self, replace: bool = False, replace_path: str | None = None) -> bool:
         with self._lock:
             if self._thread and self._thread.is_alive():
                 return False
             if replace:
-                self._replace_path = self.check.get("local_path") or None
+                if replace_path and Path(replace_path).exists():
+                    self._replace_path = str(replace_path)
+                else:
+                    self._replace_path = self.check.get("local_path") or None
+                    if not self._replace_path:
+                        locals_ = local_isos()
+                        if locals_:
+                            self._replace_path = str(locals_[0])
             elif self.state != "paused":
                 self._replace_path = None
             self._stop.clear()
@@ -493,3 +584,170 @@ class IsoDownloader:
 
 
 DOWNLOADER = IsoDownloader()
+
+
+class TargetVersionChecker:
+    """Verifica e traccia dinamicamente l'ultima versione stabile ufficiale di Windows 11.
+
+    Interroga i canali ufficiali Microsoft (Learn Release Information e pagina di Download)
+    in modo che l'obiettivo dell'applicazione sia sempre e automaticamente l'ultima release
+    stabile (es. 26H2, 27H2, 28H2...), senza hardcoding di versioni statiche.
+    """
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._thread: threading.Thread | None = None
+        self.state = "idle"  # idle | checking | done | error
+        self.release = SETTINGS.get("cached_target_release") or "26H2"
+        self.build = SETTINGS.get("cached_target_build") or "26300"
+        self.date = SETTINGS.get("cached_target_date") or ""
+        self.source = "cache" if SETTINGS.get("cached_target_release") else "fallback"
+        self.error = ""
+        self.checked_at = 0.0
+
+    def snapshot(self) -> dict:
+        subtitle = f"Build {self.build} · Ufficiale Microsoft" if self.build else "Ultima build ufficiale Microsoft"
+        return {
+            "state": self.state,
+            "release": self.release,
+            "build": self.build,
+            "date": self.date,
+            "source": self.source,
+            "error": self.error,
+            "title": f"Windows 11 {self.release}",
+            "subtitle": subtitle,
+            "checked_at": time.strftime("%H:%M", time.localtime(self.checked_at)) if self.checked_at else "",
+        }
+
+    def check_async(self, force: bool = False):
+        with self._lock:
+            if not force and self.state == "done" and (time.time() - self.checked_at < 600):
+                return
+            if self._thread and self._thread.is_alive():
+                return
+            self.state = "checking"
+            self._thread = threading.Thread(target=self._run, daemon=True)
+            self._thread.start()
+
+    def update_from_source(self, release: str, build: str = "", source: str = "ms_download_api"):
+        if not release:
+            return
+        with self._lock:
+            if _release_key(release) >= _release_key(self.release):
+                self.release = release
+                if build:
+                    self.build = build
+                self.source = source
+                self.state = "done"
+                self.checked_at = time.time()
+                SETTINGS.set("cached_target_release", self.release)
+                if self.build:
+                    SETTINGS.set("cached_target_build", self.build)
+
+    def _run(self):
+        log("Verifica ultima versione stabile Windows 11 sul sito Microsoft…")
+        http = _Http()
+        discovered: list[dict] = []
+
+        # 1. Pagina ufficiale Microsoft Learn - Windows 11 Release Information (servicing channels)
+        for url in [
+            "https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information",
+            "https://learn.microsoft.com/it-it/windows/release-health/windows11-release-information",
+        ]:
+            try:
+                html = http.get(url, timeout=15)
+                table_match = re.search(
+                    r'<h4 id="servicing-channels"[^>]*>.*?</h4>\s*<table>(.*?)</table>',
+                    html, re.S | re.I
+                )
+                if not table_match:
+                    table_match = re.search(r'<table>(.*?)</table>', html, re.S)
+                if table_match:
+                    rows = re.findall(r'<tr[^>]*>(.*?)</tr>', table_match.group(1), re.S)
+                    for r in rows:
+                        cells = [re.sub(r'<[^>]+>', '', c).strip() for c in re.findall(r'<td[^>]*>(.*?)</td>', r, re.S)]
+                        if len(cells) >= 8:
+                            ver, channel, avail, end_home, end_ent, update, rev_date, bld = cells[:8]
+                            m = re.match(r'^(\d{2}H\d)$', ver.strip(), re.I)
+                            if m and ("general availability" in channel.lower() or "disponibilit" in channel.lower()):
+                                rel_clean = m.group(1).upper()
+                                base_bld = bld.split(".")[0]
+                                if base_bld.isdigit():
+                                    BUILD_TO_RELEASE[base_bld] = rel_clean
+                                discovered.append({
+                                    "release": rel_clean,
+                                    "build": bld,
+                                    "date": avail,
+                                    "source": "ms_release_health",
+                                })
+                if discovered:
+                    break
+            except Exception as exc:
+                log(f"Controllo Microsoft Release Information ({url}): {exc}", "warn")
+
+        # 2. Pagina ufficiale di download Microsoft Windows 11
+        try:
+            html = http.get(MS_PAGE.format(loc="it-it"), timeout=15)
+            m = re.search(r'(?:Versione corrente|Current release)[^<\n]*\b(\d{2}H\d)\b', html, re.I)
+            if m:
+                rel_clean = m.group(1).upper()
+                discovered.append({
+                    "release": rel_clean,
+                    "build": "",
+                    "date": "",
+                    "source": "ms_download_page",
+                })
+        except Exception as exc:
+            log(f"Controllo pagina download Microsoft fallito: {exc}", "warn")
+
+        # 3. Considera anche eventuali ISO già scaricate localmente
+        for iso_p in local_isos():
+            linfo = parse_iso_name(iso_p.name)
+            if linfo.get("release"):
+                discovered.append({
+                    "release": linfo["release"],
+                    "build": linfo.get("build", ""),
+                    "date": "",
+                    "source": "local_iso",
+                })
+
+        # 4. Determina l'obiettivo più recente
+        with self._lock:
+            if discovered:
+                discovered.sort(key=lambda x: _release_key(x["release"]), reverse=True)
+                best = discovered[0]
+                if not best.get("build"):
+                    for d in discovered:
+                        if d.get("release") == best["release"] and d.get("build"):
+                            best["build"] = d["build"]
+                            break
+                if not best.get("build"):
+                    for b_k, r_v in BUILD_TO_RELEASE.items():
+                        if r_v == best["release"]:
+                            best["build"] = b_k
+                            break
+
+                self.release = best["release"]
+                if best.get("build"):
+                    self.build = best["build"]
+                if best.get("date"):
+                    self.date = best["date"]
+                self.source = best.get("source", "microsoft")
+                self.state = "done"
+                self.checked_at = time.time()
+                self.error = ""
+
+                SETTINGS.set("cached_target_release", self.release)
+                SETTINGS.set("cached_target_build", self.build)
+                if self.date:
+                    SETTINGS.set("cached_target_date", self.date)
+
+                log(f"Ultima versione stabile Windows 11 rilevata da Microsoft: {self.release} (build {self.build})", "ok")
+            else:
+                self.state = "error"
+                self.error = "Nessuna informazione ricevuta da Microsoft"
+                log(f"Controllo versione Microsoft non riuscito, uso fallback: {self.release}", "warn")
+
+
+TARGET_CHECKER = TargetVersionChecker()
+

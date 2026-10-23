@@ -16,6 +16,8 @@
   let pollTimer = null;
   let currentView = "dashboard";
   let lastCheckId = null; // ultimo esito di verifica aggiornamento ISO già mostrato
+  let sessionDismissedIsoAlert = false;
+  let currentReplacingIsoPath = null;
 
   // ---------------------------------------------------------------------------
   // API Helper
@@ -91,6 +93,72 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Version Comparison Helper
+  // ---------------------------------------------------------------------------
+  function releaseKey(release) {
+    if (!release) return 0;
+    const m = String(release).match(/(\d{2})H(\d)/i);
+    return m ? parseInt(m[1], 10) * 10 + parseInt(m[2], 10) : 0;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Rendering: Target Version (da Microsoft)
+  // ---------------------------------------------------------------------------
+  function renderTarget(target, sys) {
+    const targetEl = document.getElementById("vp-to");
+    const targetBuildEl = document.getElementById("vp-to-build");
+    const badgeStatus = document.getElementById("dash-badge-status");
+    const heroDesc = document.getElementById("hero-desc");
+    const dlTitle = document.getElementById("dl-title");
+
+    const targetRel = (target && target.release) || "26H2";
+    if (targetEl) {
+      targetEl.textContent = targetRel;
+    }
+    if (targetBuildEl) {
+      if (target && target.subtitle) {
+        targetBuildEl.textContent = target.subtitle;
+      } else if (target && target.build) {
+        targetBuildEl.textContent = `Build ${target.build} · Ufficiale Microsoft`;
+      } else {
+        targetBuildEl.textContent = "Ultima build ufficiale Microsoft";
+      }
+    }
+    if (dlTitle) {
+      dlTitle.textContent = `Windows 11 ${targetRel} (64-bit, Italiano)`;
+    }
+
+    if (sys && sys.display) {
+      const currKey = releaseKey(sys.display);
+      const tgtKey = releaseKey(targetRel);
+      const currBuild = parseInt(sys.build || "0", 10);
+      const tgtBuild = parseInt(String((target && target.build) || "0").split(".")[0], 10);
+
+      const isUpToDate =
+        (currKey > 0 && currKey > tgtKey) ||
+        (currKey === tgtKey && (!tgtBuild || currBuild >= tgtBuild));
+
+      if (badgeStatus) {
+        if (isUpToDate) {
+          badgeStatus.className = "tag ok";
+          badgeStatus.textContent = `SISTEMA AGGIORNATO (${targetRel})`;
+        } else {
+          badgeStatus.className = "tag accent";
+          badgeStatus.textContent = `AGGIORNAMENTO A ${targetRel}`;
+        }
+      }
+
+      if (heroDesc) {
+        if (isUpToDate) {
+          heroDesc.textContent = `Il tuo computer è già aggiornato all'ultima versione stabile ufficiale (Windows 11 ${targetRel}). Con W11 Update Flow puoi comunque scaricare la ISO ufficiale o eseguire un aggiornamento sul posto/riparazione conservando al 100% file personali, app e impostazioni.`;
+        } else {
+          heroDesc.textContent = `Aggiorna il tuo computer all'ultima versione stabile di Windows 11 (${targetRel}) anche se privo di requisiti ufficiali (TPM 2.0, Secure Boot o CPU obsoleta). I file personali, le applicazioni e le impostazioni vengono conservati al 100%.`;
+        }
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Rendering: System & Hardware
   // ---------------------------------------------------------------------------
   function renderSystem(sys, state) {
@@ -123,9 +191,8 @@
     fromEl.textContent = currVer;
     fromBuildEl.textContent = `Build ${sys.build}${sys.ubr ? "." + sys.ubr : ""}`;
 
-    // Target Version
-    const targetEl = document.getElementById("vp-to");
-    targetEl.textContent = "25H2 / 26H2";
+    // Target Version (dinamica verificata dai server Microsoft)
+    renderTarget(currentState && currentState.target, sys);
 
     // Dashboard mini summary
     const setKV = (id, val) => {
@@ -337,11 +404,17 @@
       btnPause.style.display = "none";
       btnCancel.style.display = "none";
 
-      s2Tag.className = "tag ok";
-      s2Tag.textContent = "Completato";
-      s2Card.className = "step done";
-
-      if (heroDlBtnText) heroDlBtnText.textContent = "ISO Scaricata con Successo";
+      if (currentState?.iso_status?.is_outdated) {
+        s2Tag.className = "tag warn";
+        s2Tag.textContent = `ISO Obsoleta (${currentState.iso_status.release || "Vecchia"})`;
+        s2Card.className = "step done";
+        if (heroDlBtnText) heroDlBtnText.textContent = `Scarica Nuova ISO (${currentState.iso_status.target_release || "26H2"})`;
+      } else {
+        s2Tag.className = "tag ok";
+        s2Tag.textContent = "Completato";
+        s2Card.className = "step done";
+        if (heroDlBtnText) heroDlBtnText.textContent = "ISO Scaricata con Successo";
+      }
     } else {
       // idle, error, cancelled
       stState.textContent = dl.state === "error" ? `Errore: ${dl.error}` : "In attesa";
@@ -351,19 +424,29 @@
       barFill.style.width = "0%";
       barBox.className = "progress lg";
 
+      const targetRel = (currentState?.target && currentState.target.release) || "26H2";
       btnText.textContent = "Avvia Scaricamento (1-Clic)";
       btnAction.disabled = false;
       btnPause.style.display = "none";
       btnCancel.style.display = "none";
 
       if (isos && isos.length > 0) {
-        s2Tag.className = "tag ok";
-        s2Tag.textContent = "ISO Presente";
-        s2Card.className = "step done";
+        if (currentState?.iso_status?.is_outdated) {
+          s2Tag.className = "tag warn";
+          s2Tag.textContent = `ISO Obsoleta (${currentState.iso_status.release || "Vecchia"})`;
+          s2Card.className = "step done";
+          if (heroDlBtnText) heroDlBtnText.textContent = `Aggiorna ISO (${currentState.iso_status.target_release || targetRel})`;
+        } else {
+          s2Tag.className = "tag ok";
+          s2Tag.textContent = "ISO Presente";
+          s2Card.className = "step done";
+          if (heroDlBtnText) heroDlBtnText.textContent = "ISO Presente (Pronta)";
+        }
       } else {
         s2Tag.className = "tag";
         s2Tag.textContent = "In Attesa";
         s2Card.className = "step";
+        if (heroDlBtnText) heroDlBtnText.textContent = `Scarica ISO Windows 11 (${targetRel})`;
       }
     }
 
@@ -374,6 +457,36 @@
       btnText.textContent = "Verifica aggiornamenti…";
       btnAction.disabled = true;
       if (heroDlBtnText) heroDlBtnText.textContent = "Verifica aggiornamenti…";
+    }
+
+    // Alert Banner: ISO Obsoleta vs Versione Obiettivo
+    const heroAlert = document.getElementById("hero-iso-alert");
+    const upgAlert = document.getElementById("upg-iso-alert");
+    const alertIsoRel = document.getElementById("alert-iso-rel");
+    const alertTgtRel = document.getElementById("alert-target-rel");
+    const upgIsoRel = document.getElementById("upg-alert-iso-rel");
+    const upgTgtRel = document.getElementById("upg-alert-target-rel");
+    const curTargetRel = (currentState?.target && currentState.target.release) || "26H2";
+
+    if (heroAlert) {
+      if (currentState?.iso_status?.is_outdated && !sessionDismissedIsoAlert) {
+        heroAlert.style.display = "flex";
+        if (alertIsoRel) alertIsoRel.textContent = currentState.iso_status.release || "Precedente";
+        if (alertTgtRel) alertTgtRel.textContent = currentState.iso_status.target_release || curTargetRel;
+      } else {
+        heroAlert.style.display = "none";
+      }
+    }
+
+    if (upgAlert) {
+      const activeIso = (isos || []).find((i) => i.path === selectedIso) || (isos && isos[0]);
+      if (activeIso && activeIso.is_outdated) {
+        upgAlert.style.display = "flex";
+        if (upgIsoRel) upgIsoRel.textContent = activeIso.release || "Precedente";
+        if (upgTgtRel) upgTgtRel.textContent = activeIso.target_release || curTargetRel;
+      } else {
+        upgAlert.style.display = "none";
+      }
     }
 
     // Render ISO Library list
@@ -391,6 +504,9 @@
           .map((iso) => {
             const isSel = iso.path === selectedIso;
             const sizeH = (iso.size / 1024 ** 3).toFixed(2) + " GB";
+            const outdatedTag = iso.is_outdated
+              ? `<span class="tag warn" title="${(iso.status_msg || 'Versione precedente alla release obiettivo').replace(/"/g, '&quot;')}" style="margin-left:6px">Obsoleta (Obiettivo: ${iso.target_release || curTargetRel})</span>`
+              : `<span class="tag ok" style="margin-left:6px">Aggiornata</span>`;
             return `
               <div class="iso ${isSel ? "selected" : ""}" data-path="${iso.path.replace(/"/g, "&quot;")}">
                 <div class="radio"></div>
@@ -398,14 +514,19 @@
                   <svg class="icon"><ellipse cx="12" cy="12" rx="10" ry="10"/><circle cx="12" cy="12" r="3"/></svg>
                 </div>
                 <div>
-                  <div class="iso-name">${iso.name} ${iso.external ? '<span class="tag info plain" style="margin-left:6px">Esterna</span>' : ""}</div>
+                  <div class="iso-name">
+                    ${iso.name}
+                    ${iso.external ? '<span class="tag info plain" style="margin-left:6px">Esterna</span>' : ""}
+                    ${outdatedTag}
+                  </div>
                   <div class="iso-meta">
                     <span>Dimensione: <b>${sizeH}</b></span> •
                     <span>Versione: <b>${iso.release || "Windows 11"}</b></span> •
                     <span>Data: ${iso.date}</span>
                   </div>
                 </div>
-                <div>
+                <div style="display:flex; gap:6px; align-items:center;">
+                  ${iso.is_outdated ? `<button class="btn btn-sm btn-ghost btn-replace-single-iso" data-path="${iso.path.replace(/"/g, "&quot;")}" title="Aggiorna o sostituisci con la versione target">Aggiorna</button>` : ""}
                   ${isSel ? '<span class="tag accent">Selezionata</span>' : '<button class="btn btn-sm btn-ghost btn-select-iso">Seleziona</button>'}
                 </div>
               </div>
@@ -414,6 +535,17 @@
           .join("");
 
         // Attach clicks
+        isoListContainer.querySelectorAll(".btn-replace-single-iso").forEach((btn) => {
+          btn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            const p = btn.getAttribute("data-path");
+            const targetIso = (isos || []).find((i) => i.path === p);
+            if (targetIso) {
+              openIsoCompareDialog(targetIso, currentState?.target);
+            }
+          });
+        });
+
         isoListContainer.querySelectorAll(".iso").forEach((el) => {
           el.addEventListener("click", () => {
             const p = el.getAttribute("data-path");
@@ -455,6 +587,32 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Dialog di confronto e aggiornamento ISO
+  // ---------------------------------------------------------------------------
+  function openIsoCompareDialog(localIso, targetInfo) {
+    if (!localIso) return;
+    const set = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val || "—";
+    };
+    currentReplacingIsoPath = localIso.path || null;
+    const tgtRel = (targetInfo && targetInfo.release) || "26H2";
+    const tgtBuild = (targetInfo && targetInfo.build) || "";
+    const sizeH = localIso.size ? ((localIso.size / 1024 ** 3).toFixed(2) + " GB") : (localIso.size_h || "—");
+
+    set("iso-upd-local-rel", localIso.release || "Precedente");
+    set("iso-upd-local-name", localIso.name || "ISO Windows 11 Locale");
+    set("iso-upd-local-meta", `${sizeH} · ${localIso.date || ""}`);
+
+    set("iso-upd-remote-rel", tgtRel);
+    set("iso-upd-remote-name", (targetInfo && targetInfo.filename) || `Win11_${tgtRel}_Italian_x64.iso`);
+    set("iso-upd-remote-meta", tgtBuild ? `Build ${tgtBuild} · Ufficiale Microsoft` : "Ultima build ufficiale Microsoft");
+
+    const dlg = document.getElementById("dlg-iso-update");
+    if (dlg && !dlg.open) dlg.showModal();
+  }
+
+  // ---------------------------------------------------------------------------
   // Verifica aggiornamento ISO (ISO locale vs ISO sul sito Microsoft)
   // ---------------------------------------------------------------------------
   function handleIsoCheck(chk) {
@@ -468,18 +626,17 @@
     lastCheckId = chk.id;
 
     if (chk.state === "newer") {
-      const set = (id, val) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val || "—";
-      };
-      set("iso-upd-local-rel", chk.local_release);
-      set("iso-upd-local-name", chk.local_name);
-      set("iso-upd-local-meta", `${chk.local_size_h} · ${chk.local_date}`);
-      set("iso-upd-remote-rel", chk.remote_release);
-      set("iso-upd-remote-name", chk.remote_name);
-      set("iso-upd-remote-meta", `${chk.remote_size_h} · ${chk.remote_date}`);
-      const dlg = document.getElementById("dlg-iso-update");
-      if (dlg && !dlg.open) dlg.showModal();
+      openIsoCompareDialog({
+        release: chk.local_release,
+        name: chk.local_name,
+        size_h: chk.local_size_h,
+        date: chk.local_date,
+        path: chk.local_path,
+      }, {
+        release: chk.remote_release,
+        filename: chk.remote_name,
+        subtitle: `${chk.remote_size_h} · ${chk.remote_date}`,
+      });
     } else if (chk.state === "uptodate") {
       toast(`La ISO presente è già la più aggiornata (${chk.local_release} · ${chk.local_name})`, "ok");
     } else if (chk.state === "missing") {
@@ -643,6 +800,7 @@
       }
 
       renderSystem(state.system, state.system_state);
+      renderTarget(state.target, state.system);
       renderDownload(state.download, state.isos, state.selected_iso);
       handleIsoCheck(state.download && state.download.check);
       renderUpgrade(state.upgrade);
@@ -684,14 +842,26 @@
     // Re-check scanner
     const triggerScan = async () => {
       try {
+        sessionDismissedIsoAlert = false;
         await api("/api/scan", "POST");
-        toast("Scansione hardware avviata", "info");
+        toast("Scansione PC e verifica versione Microsoft avviate", "info");
       } catch (e) {
         toast("Impossibile avviare la scansione", "error");
       }
     };
     document.getElementById("btn-quick-scan")?.addEventListener("click", triggerScan);
     document.getElementById("btn-recheck")?.addEventListener("click", triggerScan);
+
+    // Controllo manuale ultima versione Microsoft
+    document.getElementById("vp-target-node")?.addEventListener("click", async () => {
+      try {
+        sessionDismissedIsoAlert = false;
+        toast("Controllo ultima versione stabile sui server Microsoft…", "info");
+        await api("/api/target/check", "POST");
+      } catch (e) {
+        toast("Impossibile contattare i server Microsoft", "warn");
+      }
+    });
 
     // Download controls
     const triggerDownload = async () => {
@@ -725,12 +895,75 @@
       isoUpdDlg.close();
       toast("ISO attuale mantenuta", "info");
     });
+    document.getElementById("btn-iso-upd-download-keep")?.addEventListener("click", async () => {
+      isoUpdDlg.close();
+      try {
+        const res = await api("/api/download/start", "POST", { force: true });
+        if (res.ok) {
+          toast("Download della nuova ISO avviato: l'attuale verrà conservata", "ok");
+          switchView("download");
+        } else {
+          toast("Download già in corso", "warn");
+        }
+      } catch (e) {
+        toast(`Errore avvio download: ${e.message}`, "error");
+      }
+    });
     document.getElementById("btn-iso-upd-download")?.addEventListener("click", async () => {
       isoUpdDlg.close();
       try {
-        const res = await api("/api/download/replace", "POST");
+        const res = await api("/api/download/replace", "POST", { replace_path: currentReplacingIsoPath });
         if (res.ok) {
           toast("Download della nuova ISO avviato: la vecchia verrà eliminata al termine", "info");
+          switchView("download");
+        } else {
+          toast("Download già in corso", "warn");
+        }
+      } catch (e) {
+        toast(`Errore avvio download: ${e.message}`, "error");
+      }
+    });
+
+    // Alert Banner Dashboard actions
+    document.getElementById("btn-banner-replace")?.addEventListener("click", () => {
+      const iso = currentState?.iso_status;
+      if (iso && iso.has_iso) {
+        openIsoCompareDialog(iso, currentState?.target);
+      }
+    });
+    document.getElementById("btn-banner-download-new")?.addEventListener("click", async () => {
+      try {
+        const res = await api("/api/download/start", "POST", { force: true });
+        if (res.ok) {
+          toast("Download della nuova ISO avviato (versione target ufficiale)", "ok");
+          switchView("download");
+        } else {
+          toast("Download già in corso", "warn");
+        }
+      } catch (e) {
+        toast(`Errore avvio download: ${e.message}`, "error");
+      }
+    });
+    document.getElementById("btn-banner-dismiss")?.addEventListener("click", () => {
+      sessionDismissedIsoAlert = true;
+      const b = document.getElementById("hero-iso-alert");
+      if (b) b.style.display = "none";
+    });
+
+    // Alert Banner Upgrade view actions
+    document.getElementById("btn-upg-replace")?.addEventListener("click", () => {
+      const activeIso = (currentState?.isos || []).find((i) => i.path === currentState?.selected_iso) ||
+                        (currentState?.isos && currentState.isos[0]) ||
+                        currentState?.iso_status;
+      if (activeIso) {
+        openIsoCompareDialog(activeIso, currentState?.target);
+      }
+    });
+    document.getElementById("btn-upg-dl-new")?.addEventListener("click", async () => {
+      try {
+        const res = await api("/api/download/start", "POST", { force: true });
+        if (res.ok) {
+          toast("Download della nuova ISO avviato (versione target ufficiale)", "ok");
           switchView("download");
         } else {
           toast("Download già in corso", "warn");

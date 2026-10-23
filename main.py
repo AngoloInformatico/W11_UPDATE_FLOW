@@ -108,11 +108,13 @@ def main():
     iso_dir()  # garantisce la cartella ISO
     from app.server import LAST_BEAT, start_server
     from app.system_info import SCANNER
+    from app.ms_download import TARGET_CHECKER
     from app.core import app_version
 
     srv, port = start_server()
     log(f"{APP_NAME} v{app_version()} avviato")
     SCANNER.scan_async()
+    TARGET_CHECKER.check_async()
     url = f"http://127.0.0.1:{port}/"
     open_window(url)
 

@@ -15,7 +15,7 @@ from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
 from .core import APP_NAME, LOG, SETTINGS, app_version, is_admin, iso_dir, log
-from .ms_download import DOWNLOADER
+from .ms_download import DOWNLOADER, TARGET_CHECKER
 from .system_info import SCANNER
 from .tools import HASHER, browse_iso, run_tool
 from .upgrade import UPGRADER, list_isos
@@ -40,11 +40,34 @@ def full_state(since: int) -> dict:
     if (not sel or not Path(sel).exists()) and isos:
         sel = isos[0]["path"]
         SETTINGS.set("selected_iso", sel)
+
+    from .ms_download import compare_iso_with_target
+    primary_iso = next((i for i in isos if i["path"] == sel), None) or (isos[0] if isos else None)
+    iso_status = {"has_iso": False, "is_outdated": False, "status": "none"}
+    if primary_iso:
+        cmp = compare_iso_with_target(primary_iso)
+        iso_status = {
+            "has_iso": True,
+            "path": primary_iso["path"],
+            "name": primary_iso["name"],
+            "release": primary_iso.get("release", ""),
+            "build": primary_iso.get("build", ""),
+            "size": primary_iso.get("size", 0),
+            "date": primary_iso.get("date", ""),
+            "is_outdated": cmp["is_outdated"],
+            "status": cmp["status"],
+            "target_release": cmp["target_release"],
+            "target_build": cmp["target_build"],
+            "message": cmp["message"],
+        }
+
     return {
         "app": {"name": APP_NAME, "version": app_version(), "admin": is_admin(), "iso_dir": str(iso_dir())},
         "system": SCANNER.data, "system_state": SCANNER.state,
+        "target": TARGET_CHECKER.snapshot(),
         "download": DOWNLOADER.snapshot(),
         "isos": isos, "selected_iso": sel if sel and Path(sel).exists() else "",
+        "iso_status": iso_status,
         "upgrade": UPGRADER.snapshot(),
         "hash": HASHER.snapshot(),
         "settings": SETTINGS.all(),
@@ -120,6 +143,10 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/scan":
             SCANNER.scan_async()
+            TARGET_CHECKER.check_async(force=True)
+            return self._json({"ok": True})
+        if path == "/api/target/check":
+            TARGET_CHECKER.check_async(force=True)
             return self._json({"ok": True})
         if path == "/api/download/start":
             # ISO già presente (e nessun download parziale da riprendere): verifica aggiornamenti
@@ -131,7 +158,8 @@ class Handler(BaseHTTPRequestHandler):
                 log("Richiesta download ISO ufficiale Windows 11 · Italiano · x64")
             return self._json({"ok": ok})
         if path == "/api/download/replace":
-            ok = DOWNLOADER.start(replace=True)
+            r_path = body.get("replace_path")
+            ok = DOWNLOADER.start(replace=True, replace_path=r_path)
             if ok:
                 log("Download della nuova ISO avviato: la vecchia verrà eliminata al termine", "warn")
             return self._json({"ok": ok})

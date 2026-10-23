@@ -134,16 +134,35 @@
                   <div class="vp-build mono" id="vp-from-build">Rilevamento in corso…</div>
                 </div>
                 <div class="vp-arrow" aria-hidden="true"></div>
-                <div class="vp-node">
+                <div class="vp-node" id="vp-target-node" title="Ultima versione stabile ufficiale verificata sui server Microsoft (fai clic per riverificare)">
                   <div class="vp-label">Versione Obiettivo</div>
-                  <div class="vp-value to" id="vp-to">25H2 / 26H2</div>
+                  <div class="vp-value to" id="vp-to">26H2</div>
                   <div class="vp-build mono" id="vp-to-build">Ultima build ufficiale Microsoft</div>
                 </div>
               </div>
-              <p class="hero-desc">
+              <p class="hero-desc" id="hero-desc">
                 Aggiorna il tuo computer con Windows 11 anche se privo di requisiti ufficiali (TPM 2.0, Secure Boot o CPU obsoleta).
                 I file personali, le applicazioni e le impostazioni vengono conservati al 100%.
               </p>
+
+              <!-- Banner Avviso ISO Obsoleta -->
+              <div class="iso-alert-banner" id="hero-iso-alert" style="display:none">
+                <div class="iso-alert-ico">
+                  <svg class="icon"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div class="iso-alert-text">
+                  <div class="iso-alert-title">ISO Presente non aggiornata</div>
+                  <div class="iso-alert-desc">
+                    La ISO presente in cartella (<b id="alert-iso-rel">24H2</b>) è precedente alla versione obiettivo (<b id="alert-target-rel">26H2</b>). Si consiglia di scaricare la versione più recente.
+                  </div>
+                </div>
+                <div class="iso-alert-actions">
+                  <button class="btn btn-sm btn-primary" id="btn-banner-replace">Sostituisci</button>
+                  <button class="btn btn-sm btn-ghost" id="btn-banner-download-new">Scarica Nuova</button>
+                  <button class="btn btn-sm btn-ghost" id="btn-banner-dismiss" title="Ignora avviso">✕</button>
+                </div>
+              </div>
+
               <div class="hero-actions">
                 <button class="btn btn-primary btn-lg" id="btn-hero-download">
                   <svg class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -418,6 +437,23 @@
                   <div>
                     <div class="iso-name" id="upg-iso-name">Nessuna ISO selezionata</div>
                     <div class="iso-meta mono" id="upg-iso-meta">Scarica una ISO dalla sezione Download o selezionala dall'elenco</div>
+                  </div>
+                </div>
+
+                <!-- Alert ISO Obsoleta nella vista Upgrade -->
+                <div class="iso-alert-banner" id="upg-iso-alert" style="display:none; margin-top:10px; margin-bottom:0">
+                  <div class="iso-alert-ico">
+                    <svg class="icon"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  </div>
+                  <div class="iso-alert-text">
+                    <div class="iso-alert-title">ISO Selezionata Obsoleta</div>
+                    <div class="iso-alert-desc">
+                      La ISO selezionata (<b id="upg-alert-iso-rel">24H2</b>) è precedente all'obiettivo (<b id="upg-alert-target-rel">26H2</b>). Si consiglia di aggiornarla prima di eseguire il setup.
+                    </div>
+                  </div>
+                  <div class="iso-alert-actions">
+                    <button class="btn btn-sm btn-primary" id="btn-upg-replace">Sostituisci</button>
+                    <button class="btn btn-sm btn-ghost" id="btn-upg-dl-new">Scarica Nuova</button>
                   </div>
                 </div>
               </div>
@@ -802,10 +838,11 @@
           <div class="iso-cmp-meta" id="iso-upd-remote-meta">—</div>
         </div>
       </div>
-      <p class="iso-cmp-warn">⚠ Scegliendo di scaricare la nuova ISO, quella attuale verrà eliminata al termine del download.</p>
+      <p class="iso-cmp-warn" id="iso-upd-warn-text">Scegli come procedere: puoi scaricare la nuova ISO sostituendo quella vecchia oppure scaricarla mantenendo entrambi i file.</p>
     </div>
     <div class="dlg-foot">
       <button class="btn btn-ghost" id="btn-iso-upd-keep">Mantieni l'attuale</button>
+      <button class="btn btn-secondary" id="btn-iso-upd-download-keep">Scarica come nuova</button>
       <button class="btn btn-primary" id="btn-iso-upd-download">Scarica e sostituisci</button>
     </div>
   </dialog>
