@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Versione-1.0.3-B8F23A?style=for-the-badge" alt="Versione">
+  <img src="https://img.shields.io/badge/Versione-1.0.5-B8F23A?style=for-the-badge" alt="Versione">
   <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript">
   <img src="https://img.shields.io/badge/HTML5%20%2F%20CSS3-E34F26?style=for-the-badge&logo=html5&logoColor=white" alt="HTML5 e CSS3">
@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <img src="ScreenShot/Image.png" alt="Schermata di W11 Update Flow" width="900">
+  <img src="ScreenShot/Image.png?v=1.0.5" alt="Schermata di W11 Update Flow" width="900">
 </p>
 
 <p align="center">
